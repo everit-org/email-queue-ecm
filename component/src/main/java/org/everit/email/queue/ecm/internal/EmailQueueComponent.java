@@ -17,8 +17,9 @@ package org.everit.email.queue.ecm.internal;
 
 import java.util.Hashtable;
 
-import org.everit.email.queue.CreatePassOnJobParam;
 import org.everit.email.queue.EmailQueue;
+import org.everit.email.queue.EmailQueueParameter;
+import org.everit.email.queue.PassOnJobParam;
 import org.everit.email.queue.ecm.EmailQueueConstants;
 import org.everit.email.sender.EmailSender;
 import org.everit.email.store.EmailStore;
@@ -78,15 +79,19 @@ public class EmailQueueComponent {
    */
   @Activate
   public void activate(final ComponentContext<EmailQueueComponent> componentContext) {
-    EmailQueue emailQueue =
-        new EmailQueue(emailSender, emailStore, querydslSupport, transactionPropagator);
+    EmailQueueParameter emailQueueParameter = new EmailQueueParameter()
+        .emailSender(emailSender)
+        .emailStore(emailStore)
+        .querydslSupport(querydslSupport)
+        .transactionPropagator(transactionPropagator);
+    EmailQueue emailQueue = new EmailQueue(emailQueueParameter);
     Hashtable<String, Object> properties = new Hashtable<>(componentContext.getProperties());
     emailSenderServiceRegistration = componentContext.registerService(
         EmailSender.class,
         emailQueue,
         properties);
 
-    CreatePassOnJobParam param = new CreatePassOnJobParam()
+    PassOnJobParam param = new PassOnJobParam()
         .max(max);
     Runnable createPassOnJob = emailQueue.createPassOnJob(param);
     createPassOnJobServiceRegistration = componentContext.registerService(
