@@ -24,7 +24,7 @@ public final class EmailQueueAttributePriority {
 
   public static final int P_EMAIL_STORE = 3;
 
-  public static final int P_MAX = 5;
+  public static final int P_BATCH_MAX_SIZE = 5;
 
   public static final int P_QUERYDSL_SUPPORT = 1;
 

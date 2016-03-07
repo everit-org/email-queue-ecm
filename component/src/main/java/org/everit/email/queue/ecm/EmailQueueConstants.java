@@ -20,17 +20,17 @@ package org.everit.email.queue.ecm;
  */
 public final class EmailQueueConstants {
 
-  public static final String ATTR_EMAIL_STORE = "emailStore.target";
-
-  public static final String ATTR_MAX = "max";
-
-  public static final String ATTR_QUERYDSL_SUPPORT = "querydslSupport.target";
+  public static final String ATTR_BATCH_MAX_SIZE = "batchMaxSize";
 
   public static final String ATTR_EMAIL_SENDER = "emailSender.target";
 
+  public static final String ATTR_EMAIL_STORE = "emailStore.target";
+
+  public static final String ATTR_QUERYDSL_SUPPORT = "querydslSupport.target";
+
   public static final String ATTR_TRANSACTION_PROPAGATOR = "transactionPropagator.target";
 
-  public static final int DEFAULT_MAX = 10;
+  public static final int DEFAULT_BATCH_MAX_SIZE = 10;
 
   public static final String DEFAULT_SERVICE_DESCRIPTION = "Email Queue Component";
 

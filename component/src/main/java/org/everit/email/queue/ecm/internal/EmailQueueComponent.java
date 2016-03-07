@@ -18,8 +18,8 @@ package org.everit.email.queue.ecm.internal;
 import java.util.Hashtable;
 
 import org.everit.email.queue.EmailQueue;
-import org.everit.email.queue.EmailQueueParameter;
-import org.everit.email.queue.PassOnJobParam;
+import org.everit.email.queue.EmailQueueConfiguration;
+import org.everit.email.queue.PassOnJobConfiguration;
 import org.everit.email.queue.ecm.EmailQueueConstants;
 import org.everit.email.sender.EmailSender;
 import org.everit.email.store.EmailStore;
@@ -46,7 +46,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  */
 @Component(componentId = EmailQueueConstants.SERVICE_PID,
     configurationPolicy = ConfigurationPolicy.OPTIONAL,
-    label = "Everit Email Queue Component",
+    label = "Everit Email Queue",
     description = "ECM component for Email Queue.")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
@@ -57,8 +57,10 @@ import aQute.bnd.annotation.headers.ProvideCapability;
         label = "Service Description",
         description = "The description of this component configuration."
             + "It is used to easily identify the service registered by this component.") })
-@ManualService(EmailStore.class)
+@ManualService({ EmailStore.class, Runnable.class })
 public class EmailQueueComponent {
+
+  private int batchMaxSize;
 
   private ServiceRegistration<Runnable> createPassOnJobServiceRegistration;
 
@@ -67,8 +69,6 @@ public class EmailQueueComponent {
   private ServiceRegistration<EmailSender> emailSenderServiceRegistration;
 
   private EmailStore emailStore;
-
-  private int max;
 
   private QuerydslSupport querydslSupport;
 
@@ -79,7 +79,7 @@ public class EmailQueueComponent {
    */
   @Activate
   public void activate(final ComponentContext<EmailQueueComponent> componentContext) {
-    EmailQueueParameter emailQueueParameter = new EmailQueueParameter()
+    EmailQueueConfiguration emailQueueParameter = new EmailQueueConfiguration()
         .emailSender(emailSender)
         .emailStore(emailStore)
         .querydslSupport(querydslSupport)
@@ -91,8 +91,7 @@ public class EmailQueueComponent {
         emailQueue,
         properties);
 
-    PassOnJobParam param = new PassOnJobParam()
-        .max(max);
+    PassOnJobConfiguration param = new PassOnJobConfiguration().batchMaxSize(batchMaxSize);
     Runnable createPassOnJob = emailQueue.createPassOnJob(param);
     createPassOnJobServiceRegistration = componentContext.registerService(
         Runnable.class,
@@ -114,31 +113,31 @@ public class EmailQueueComponent {
     }
   }
 
+  @IntegerAttribute(attributeId = EmailQueueConstants.ATTR_BATCH_MAX_SIZE,
+      defaultValue = EmailQueueConstants.DEFAULT_BATCH_MAX_SIZE,
+      priority = EmailQueueAttributePriority.P_BATCH_MAX_SIZE, label = "Batch max size",
+      description = "The maximum number of emails that is passed on to the sink in a job call.")
+  public void setBatchMaxSize(final int max) {
+    this.batchMaxSize = max;
+  }
+
   @ServiceRef(attributeId = EmailQueueConstants.ATTR_EMAIL_SENDER, defaultValue = "",
-      attributePriority = EmailQueueAttributePriority.P_EMAIL_SENDER, label = "EmailSender",
+      attributePriority = EmailQueueAttributePriority.P_EMAIL_SENDER, label = "Email sender",
       description = "OSGi service filter for org.everit.email.sender.EmailSender.")
   public void setEmailSender(final EmailSender emailSender) {
     this.emailSender = emailSender;
   }
 
   @ServiceRef(attributeId = EmailQueueConstants.ATTR_EMAIL_STORE, defaultValue = "",
-      attributePriority = EmailQueueAttributePriority.P_EMAIL_STORE, label = "EmailStore",
+      attributePriority = EmailQueueAttributePriority.P_EMAIL_STORE, label = "Email store",
       description = "OSGi service filter for org.everit.email.store.EmailStore.")
   public void setEmailStore(final EmailStore emailStore) {
     this.emailStore = emailStore;
   }
 
-  @IntegerAttribute(attributeId = EmailQueueConstants.ATTR_MAX,
-      defaultValue = EmailQueueConstants.DEFAULT_MAX,
-      priority = EmailQueueAttributePriority.P_MAX, label = "Max",
-      description = "The maximum number that want to send at the same time.")
-  public void setMax(final int max) {
-    this.max = max;
-  }
-
   @ServiceRef(attributeId = EmailQueueConstants.ATTR_QUERYDSL_SUPPORT, defaultValue = "",
       attributePriority = EmailQueueAttributePriority.P_QUERYDSL_SUPPORT,
-      label = "QuerydslSupport",
+      label = "Querydsl support",
       description = "OSGi service filter for "
           + "org.everit.persistence.querydsl.support.QuerydslSupport.")
   public void setQuerydslSupport(final QuerydslSupport querydslSupport) {
@@ -147,7 +146,7 @@ public class EmailQueueComponent {
 
   @ServiceRef(attributeId = EmailQueueConstants.ATTR_TRANSACTION_PROPAGATOR, defaultValue = "",
       attributePriority = EmailQueueAttributePriority.P_TRANSACTION_PROPAGATOR,
-      label = "TransactionPropagator",
+      label = "Transaction propagator",
       description = "OSGi service filter for "
           + "org.everit.transaction.propagator.TransactionPropagator.")
   public void setTransactionPropagator(final TransactionPropagator transactionPropagator) {
