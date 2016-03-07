@@ -54,15 +54,22 @@ public class DummyEmailSender implements EmailSender {
 
   }
 
-  private List<Email> sentMail = new ArrayList<>();
-
-  public List<Email> getSentMail() {
-    return sentMail;
-  }
+  private final List<Email> sentMail = new ArrayList<>();
 
   @Override
   public BulkEmailSender openBulkEmailSender() {
     return new DummyBulkEmailSender();
+  }
+
+  /**
+   * Pull mails that are sent since the last pull.
+   *
+   * @return The last mails.
+   */
+  public List<Email> pullSentMails() {
+    List<Email> result = new ArrayList<>(sentMail);
+    sentMail.clear();
+    return result;
   }
 
   @Override

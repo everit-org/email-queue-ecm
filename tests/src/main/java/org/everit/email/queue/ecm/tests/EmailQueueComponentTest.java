@@ -50,9 +50,7 @@ public class EmailQueueComponentTest {
 
   private static final List<String> FROM_ADDRESSES = new ArrayList<>();
 
-  private static final int N_5 = 5;
-
-  private static final int N_7 = 7;
+  private static final int MAX_BATCH_SIZE = 5;
 
   static {
     FROM_ADDRESSES.add("firstFromEmailAddress");
@@ -70,11 +68,11 @@ public class EmailQueueComponentTest {
 
   private DummyEmailSender sinkEmailSender;
 
-  private List<Email> assertSentMails(final int expectedSentMailSize) {
-    List<Email> sentMail = sinkEmailSender.getSentMail();
+  private List<Email> assertSentMails(final int expectedSentMailSize, final int startIndex) {
+    List<Email> sentMail = sinkEmailSender.pullSentMails();
     Assert.assertEquals(expectedSentMailSize, sentMail.size());
 
-    int fromAddressesIndex = 0;
+    int fromAddressesIndex = startIndex;
     for (Email email : sentMail) {
       Assert.assertEquals(FROM_ADDRESSES.get(fromAddressesIndex++), email.from.address);
     }
@@ -110,12 +108,12 @@ public class EmailQueueComponentTest {
       emailSender.sendEmail(createEmail(fromAddress));
     }
 
-    assertSentMails(0);
+    assertSentMails(0, 0);
 
     passOnJob.run();
-    assertSentMails(N_5);
+    assertSentMails(MAX_BATCH_SIZE, 0);
 
     passOnJob.run();
-    assertSentMails(N_7);
+    assertSentMails(FROM_ADDRESSES.size() - MAX_BATCH_SIZE, MAX_BATCH_SIZE);
   }
 }

@@ -45,7 +45,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * ECM component for {@link EmailQueue} implementation.
  */
 @Component(componentId = EmailQueueConstants.SERVICE_PID,
-    configurationPolicy = ConfigurationPolicy.OPTIONAL,
+    configurationPolicy = ConfigurationPolicy.FACTORY,
     label = "Everit Email Queue",
     description = "ECM component for Email Queue.")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
